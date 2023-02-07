@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: sergeysova/jq-action@v2
+#      - uses: sergeysova/jq-action@v2
       - name: script
         run:  bash ${GITHUB_WORKSPACE}/block_hashtags.sh "${{ secrets.ACCESS_TOKEN }}"
