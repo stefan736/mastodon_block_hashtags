@@ -1,9 +1,10 @@
 #!/bin/bash
 
-serverURL="https://social.yourdomain.net"
-applicationUserToken=$(cat API_USER_TOKEN.secret)
+. ./config.sh
 
-myAccountId=$(curl -s -H "Authorization: Bearer $applicationUserToken" $serverURL/api/v1/accounts/verify_credentials | jq -r .id)
+accessToken="$1"
+
+myAccountId=$(curl -s -H "Authorization: Bearer $accessToken" $serverURL/api/v1/accounts/verify_credentials | jq -r .id)
 
 get_all_followings () {
     # get my followers to exclude from blocking
@@ -11,8 +12,8 @@ get_all_followings () {
     nextURL=$serverURL/api/v1/accounts/$myAccountId/following?limit=80
     while :
     do
-        curl -s -H "Authorization: Bearer $applicationUserToken" $nextURL | jq .[].id >> followings.tmp
-        curl -Is -w '%header{link}' -H "Authorization: Bearer $applicationUserToken" $nextURL > header.tmp
+        curl -s -H "Authorization: Bearer $accessToken" $nextURL | jq .[].id >> followings.tmp
+        curl -Is -w '%header{link}' -H "Authorization: Bearer $accessToken" $nextURL > header.tmp
         if ! grep -q 'rel="next"' "header.tmp"; then
             break;
         fi
@@ -34,9 +35,9 @@ block_unknown_accounts_with_posts_tagged_with () {
                 echo "$tag: checking account $accountId ..."
                 if ! grep -q "$accountId" "followings.tmp"; then
                     echo "$tag: suspending account $accountId ..."
-                    curl -s -H "Authorization: Bearer $applicationUserToken" -X POST -F type=suspend $serverURL/api/v1/admin/accounts/$accountId/action
+                    curl -s -H "Authorization: Bearer $accessToken" -X POST -F type=suspend $serverURL/api/v1/admin/accounts/$accountId/action
                     echo "$tag: deleting account data $accountId ..."
-                    curl -s -H "Authorization: Bearer $applicationUserToken" -X DELETE -F type=suspend $serverURL/api/v1/admin/accounts/$accountId
+                    curl -s -H "Authorization: Bearer $accessToken" -X DELETE -F type=suspend $serverURL/api/v1/admin/accounts/$accountId
                 fi
                 count=$[$count + 1]
             fi
@@ -52,10 +53,11 @@ echo
 echo "################### START $(date) #############"
 
 get_all_followings
-block_unknown_accounts_with_posts_tagged_with nude
-block_unknown_accounts_with_posts_tagged_with nsfw
-block_unknown_accounts_with_posts_tagged_with cock
-block_unknown_accounts_with_posts_tagged_with sex
+for tag in "${tags[@]}"
+do
+    echo "Blocking tag '$tag'"
+    block_unknown_accounts_with_posts_tagged_with $tag
+done
 
 rm followings.tmp
 rm header.tmp

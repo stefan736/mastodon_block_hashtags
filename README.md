@@ -15,24 +15,38 @@ For myself this mainly applies to NSFW content.
   - the account data gets deleted
 
 ## Setup
-- register a new application in your mastodon instance
-  - Preferences > Development > New Application
-    - give it a nice name
-    - enable `admin:write:accounts`
-    - Save
-    - Copy the value of `Your access token`
-- copy the script on your machine, which should run the job
-- in the script 
-  - replace `serverURL`
-  - set `applicationUserToken` with the token you just generated
-- run
-- setup a cronjob
+
+You can either run this locally on your machine, or as a github action:
+
+### 1) Get the required access token:
+
+Regardless of how you wish to run your script, you first need to register a new application in your mastodon instance:
+
+1. Preferences > Development > New Application
+   1. give it a nice name
+   2. enable `admin:write:accounts`
+   3. Save
+   4. Copy the value of `Your access token`
+
+### 2) Run as GitHub Script
+
+If you wish to run this as a GitHub action:
+1. Fork this repository
+2. In the `./config.sh` file define your server url, and any hashtags you wish to block
+3. Create an Actions Secret called `ACCESS_TOKEN`, and supply the token generated above:
+   1.  Go to Settings > Secrets and Variables > Actions
+   2.  Click New Repository Secret
+   3.  Supply the Name and Secret
+
+### 3) Run locally
+
+Honestly, if you want to run this locally, you are probably better of using the original script, as it's a self-contained version, but if you do want run this version locally you could:
+
+1. copy the script on your machine
+2. In the `./config.sh` file define your server url, and any hashtags you wish to block
+3. setup a cronjob that would run `bash /path/to/repo/block_hashtags.sh "{ACCESS_TOKEN}"`
 
 ## Epilogue
-I created the script just for myself but maybe it is also useful for others, so I'm sharing this.
+Both the idea and the original implementation are based on [@stefan@social.stefanberger.net](https://social.stefanberger.net/@stefan)'s script. I've just added a GitHub action, to clear up server resources, and split out the config into a separte script as that's easier for github actions.
 
-I also created an [Mastodon Issue - Administrative block of posts including special hashtags #21685](https://github.com/mastodon/mastodon/issues/21685) to get this functionality implemented.
-
-Feel free to use the script, change, improve.
-
-Find me on my Mastodon instance at [@stefan@social.stefanberger.net](https://social.stefanberger.net/@stefan).
+Find me on my Mastodon instance at [@michael@thms.uk](http://mstdn.thms.uk/@michael).

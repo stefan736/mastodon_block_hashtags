@@ -1,0 +1,15 @@
+name: blockUnwantedTags
+
+on:
+  schedule:
+     - cron: '0 0 * * *'
+  workflow_dispatch:
+  
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: sergeysova/jq-action@v2
+      - name: script
+        run:  bash ${GITHUB_WORKSPACE}/block_hashtags.sh "${{ secrets.ACCESS_TOKEN }}"
