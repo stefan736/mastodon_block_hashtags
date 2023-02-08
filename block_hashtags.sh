@@ -39,7 +39,7 @@ get_all_followings () {
 block_unknown_accounts_with_posts_tagged_with () {
     tag=$1
 
-    tagURL="$serverURL/api/v1/timelines/tag/$tag"
+    tagURL="$serverURL/api/v1/timelines/tag/$tag?only_media=1"
 
     while :
     do
