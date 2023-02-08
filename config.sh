@@ -5,6 +5,7 @@ tags=(
     'gaynude'
     'nakedguy'
     'nsfw'
+    'nsfwart'
     'nude'
     'nudeart'
     'nudeboy'
