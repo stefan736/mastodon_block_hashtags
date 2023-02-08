@@ -28,7 +28,7 @@ Regardless of how you wish to run your script, you first need to register a new 
    3. Save
    4. Copy the value of `Your access token`
 
-### 2) Run as GitHub Script
+### 2) Run as GitHub Action
 
 If you wish to run this as a GitHub action:
 1. Fork this repository
@@ -37,6 +37,7 @@ If you wish to run this as a GitHub action:
    1.  Go to Settings > Secrets and Variables > Actions
    2.  Click New Repository Secret
    3.  Supply the Name and Secret
+4. Finally go to the 'Actions' tab and enable the action.
 
 ### 3) Run locally
 
