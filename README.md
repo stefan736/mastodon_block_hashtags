@@ -11,14 +11,14 @@ For myself this mainly applies to NSFW content.
 ## What the script is doing
 
 - it searches for all posts containing defined hashtags and media attachements
-- if the author of the post is not excempt (see below) they'll get suspended, and their data deleted.
+- if the author of the post is not exempt (see below) they'll get suspended, and their data deleted.
 
-### Excempting authors from suspension and deletion
+### Exempting authors from suspension and deletion
 
-This script can be run in single user, or multi user mode, which can be defined through the `multiUserMode` flag in `./config.sh`, and the option you choose will determine which users are excempt from suspension and deletion:
+This script can be run in single user, or multi user mode, which can be defined through the `multiUserMode` flag in `./config.sh`, and the option you choose will determine which users are exempt from suspension and deletion:
 
-1. `multiUserMode=false`: In this mode your own account, as well as any accounts you personally follow are excempt from suspension and deletion. If you are running this against a multi user instance, this may cause accounts on your own instance to be deleted, as well as accounts followed by other users on your own instance, so it's probably only suitable for single user instances.
-2. `multiUserMode=true`: In this mode any accounts on your instance, as well as any accounts followed by accounts on your instance are excempt from suspension and deletion. This is probably the better setup for most people.
+1. `multiUserMode=false`: In this mode your own account, as well as any accounts you personally follow are exempt from suspension and deletion. If you are running this against a multi user instance, this may cause accounts on your own instance to be deleted, as well as accounts followed by other users on your own instance, so it's probably only suitable for single user instances.
+2. `multiUserMode=true`: In this mode any accounts on your instance, as well as any accounts followed by accounts on your instance are exempt from suspension and deletion. This is probably the better setup for most people.
 
 ## Setup
 
