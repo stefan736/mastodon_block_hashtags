@@ -14,5 +14,4 @@ tags=(
     'nudephotography'    
     'nudes'
     'nudewoman'
-    'sex'
 )
