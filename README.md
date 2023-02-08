@@ -22,6 +22,8 @@ This script can be run in single user, or multi user mode, which can be defined 
 
 ## Setup
 
+You can either run this locally on your machine, or as a GitHub Action:
+
 ### 1) Get the required access token:
 
 Regardless of how you wish to run your script, you first need to register a new application in your mastodon instance:
