@@ -15,6 +15,7 @@ def pull_context(
     seen_urls,
     replied_toot_server_ids,
     reply_interval_hours,
+    max_home_timeline_length,
 ):
     """pull the context toots of toots user replied to, from their
     original server, and add them to the local server."""
@@ -31,6 +32,50 @@ def pull_context(
     add_context_urls(server, access_token, context_urls, seen_urls)
 
 
+    if max_home_timeline_length > 0:
+        timeline_toots = get_timeline(server, access_token, max_home_timeline_length)
+        known_context_urls = get_all_known_context_urls(server, timeline_toots)
+        seen_urls.update(known_context_urls)
+        replied_toot_ids = get_all_replied_toot_server_ids(
+            server, reply_toots, replied_toot_server_ids
+        )
+        context_urls = get_all_context_urls(server, replied_toot_ids)
+        add_context_urls(server, access_token, context_urls, seen_urls)
+
+def get_timeline(server, access_token, max):
+    """Get all post in the user's timeline"""
+
+
+    url = f"https://{server}/api/v1/timelines/home"
+    
+    response = get_toots(url, access_token)
+    toots = response.json()
+
+    while len(toots) < max:
+        response = get_toots(response.links['next']['url'], access_token)
+        toots = toots + response.json()
+
+    print(f"Found {len(toots)} toots in timeline")
+
+    return toots
+    
+def get_toots(url, access_token):
+    response = requests.get(
+        url, headers={"Authorization": f"Bearer {access_token}"}, timeout=5
+    )
+
+    if response.status_code == 200:
+        return response
+    elif response.status_code == 403:
+        raise Exception(
+            f"Error getting URL {url}. Status code: {response.status_code}. "
+            "Make sure you have the admin:read:accounts scope enabled for your access token."
+        )
+    else:
+        raise Exception(
+            f"Error getting URL {url}. Status code: {response.status_code}"
+        )
+    
 def get_active_user_ids(server, access_token, reply_interval_hours):
     """get all user IDs on the server that have posted a toot in the given
        time interval"""
@@ -118,14 +163,24 @@ def get_all_known_context_urls(server, reply_toots):
         filter(
             lambda url: not url.startswith(f"https://{server}/"),
             itertools.chain.from_iterable(
-                get_toot_context(*parse_mastodon_url(toot["url"]), toot["url"])
-                for toot in reply_toots
+                get_toot_context(*parse_url(toot["url"] if toot["reblog"] is None else toot["reblog"]["url"]), toot["url"])
+                for toot in filter(
+                    toot_has_parseable_url,
+                    reply_toots
+                )            
             ),
         )
     )
     print(f"Found {len(known_context_urls)} known context toots")
     return known_context_urls
 
+
+def toot_has_parseable_url(toot):
+    parsed = parse_url(toot["url"] if toot["reblog"] is None else toot["reblog"]["url"])
+    if(parsed is None) :
+        return False
+    return True
+                
 
 def get_all_replied_toot_server_ids(
     server, reply_toots, replied_toot_server_ids
@@ -177,6 +232,17 @@ def get_replied_toot_server_id(server, toot, replied_toot_server_ids):
     replied_toot_server_ids[o_url] = None
     return None
 
+def parse_url(url):
+    match = parse_mastodon_url(url)
+    if match is not None:
+        return match
+
+    match = parse_pleroma_url(url)
+    if match is not None:
+        return match
+
+    print(f"Error parsing toot URL {url}")
+    return None
 
 def parse_mastodon_url(url):
     """parse a Mastodon URL and return the server and ID"""
@@ -322,7 +388,7 @@ class OrderedSet:
 
 if __name__ == "__main__":
     HELP_MESSAGE = """
-Usage: ACCESS_TOKEN=XXXX python3 pull_context.py <server> <reply_interval_in_hours>
+Usage: ACCESS_TOKEN=XXXX python3 pull_context.py <server> <reply_interval_in_hours> <home_timeline_length>
 
 To run this script, set the ACCESS_TOKEN environment variable to your
 Mastodon access token. The access token can be generated at
@@ -337,14 +403,16 @@ read:statuses and admin:read:accounts scopes.
         print(HELP_MESSAGE)
         sys.exit(1)
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print(HELP_MESSAGE)
         sys.exit(1)
 
     SERVER = sys.argv[1]
     REPLY_INTERVAL_IN_HOURS = int(sys.argv[2])
-    SEEN_URLS_FILE = "seen_urls"
-    REPLIED_TOOT_SERVER_IDS_FILE = "replied_toot_server_ids"
+    SEEN_URLS_FILE = "artifacts/seen_urls"
+    REPLIED_TOOT_SERVER_IDS_FILE = "artifacts/replied_toot_server_ids"
+
+    MAX_HOME_TIMELINE_LENGTH = int(sys.argv[3])
 
     SEEN_URLS = OrderedSet([])
     if os.path.exists(SEEN_URLS_FILE):
@@ -362,6 +430,7 @@ read:statuses and admin:read:accounts scopes.
         SEEN_URLS,
         REPLIED_TOOT_SERVER_IDS,
         REPLY_INTERVAL_IN_HOURS,
+        MAX_HOME_TIMELINE_LENGTH,
     )
 
     with open(SEEN_URLS_FILE, "w", encoding="utf-8") as f:
